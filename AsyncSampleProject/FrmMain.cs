@@ -11,7 +11,7 @@
     public partial class FrmMain : Form
     {
         private int total;
-        List<string> testData = new List<string> { "India", "Russia", "China","USA" };
+        List<string> testData = new List<string> { "India", "Russia", "China", "USA" };
         public FrmMain()
         {
             InitializeComponent();
@@ -80,6 +80,76 @@
             total = 0;
         }
 
+        private async void btnPrimeNo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                listPrimeNos.Items.Clear();
+
+                if (string.IsNullOrEmpty(txtInput.Text))
+                {
+                    MessageBox.Show("Enter a number!");
+                    return;
+                }
+
+                string[] arr = txtInput.Text.Split(',');
+
+                foreach (string value in arr)
+                {
+                    int numericValue = 0;
+                    bool isNumber = int.TryParse(value, out numericValue);
+                    if (isNumber == false)
+                    {
+                        MessageBox.Show("Enter a list of valid numbers!");
+                        return;
+                    }
+                }
+
+                List<string> numberList = new List<string>(txtInput.Text.Split(','));
+
+                var result = await Task.Run(() => FindPrimeNumberAsync(numberList));
+
+                listPrimeNos.DataSource = result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///     Method to find Prime Number async
+        /// </summary>
+        /// <param name="numberList"></param>
+        public List<string> FindPrimeNumberAsync(List<string> numberList)
+        {
+            int j;
+            bool isPrime = false;
+            List<string> primeValues = new List<string>();
+            Parallel.ForEach(numberList,
+            currentElement =>
+            {
+                int currentElementValue = Convert.ToInt32(currentElement);
+                j = 2;
+                isPrime = true;
+                while (j < currentElementValue)
+                {
+                    if (currentElementValue % j == 0)
+                    {
+                        isPrime = false;
+                        break;
+                    }
+                    j++;
+                }
+
+                if (isPrime == true)
+                {
+                    primeValues.Add(currentElement);
+                }
+            });
+            return primeValues;
+        }
+
         private void ParallerForeach()
         {
             Parallel.ForEach(testData,
@@ -94,8 +164,8 @@
 
 
             var data2 = from co in testData.AsParallel().WithDegreeOfParallelism(2)
-                       where co.StartsWith("J")
-                       select co;
+                        where co.StartsWith("J")
+                        select co;
 
             try
             {
